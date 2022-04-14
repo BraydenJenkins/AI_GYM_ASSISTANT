@@ -5,6 +5,7 @@ import math
 import cv2
 import mediapipe as mp
 import time
+from datetime import datetime
 import _thread
 import csv
 import os
@@ -24,6 +25,12 @@ good_count = 0
 direction = 1
 count = 0
 point_no = []
+
+safetyTime = 5
+spotTimer = 0
+spotDistance = 20
+currentTime = datetime.now()
+lastTime = currentTime.timestamp()
 
 # Openpose module
 mpDraw = mp.solutions.drawing_utils
@@ -346,6 +353,22 @@ while cap.isOpened():
                         good_count += 0.5
                     else:
                         good_count += 0
+
+            # Spotter / safety timer
+            if plot4[0] < spotDistance:
+                currentTime = datetime.now()
+                currentTimestamp = currentTime.timestamp()
+                deltaTime = currentTimestamp - lastTime
+                print("deltaTime = ",deltaTime)
+                spotTimer += deltaTime
+            else:
+                spotTimer = 0
+            
+            if spotTimer > safetyTime:
+                print("DANGER!")
+
+            currentTime = datetime.now()
+            lastTime = currentTime.timestamp()
 
             pose1 = results.pose_landmarks.landmark
             pose_data = list(
