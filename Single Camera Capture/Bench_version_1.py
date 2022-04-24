@@ -10,6 +10,7 @@ import _thread
 import csv
 import os
 from itertools import count
+from playsound import playsound
 
 from Bench_version_1_function_module import *
 
@@ -31,6 +32,8 @@ spotTimer = 0
 spotDistance = 20
 currentTime = datetime.now()
 lastTime = currentTime.timestamp()
+lastSound = lastTime
+playAudio = True
 
 # Openpose module
 mpDraw = mp.solutions.drawing_utils
@@ -330,8 +333,8 @@ while cap.isOpened():
             #cv2.putText(img, str(hand_shoulder_distance), point_hand, cv2.FONT_HERSHEY_PLAIN, 1, (0,0,0), 1, cv2.LINE_AA)
 
 
-            benchMin = 50
-            benchMax = 300
+            benchMin = 70
+            benchMax = 170
             benchMinMax = (benchMin, benchMax)
 
             plot4 = plot_bar_distance(hand_shoulder_distance, benchMinMax, img)
@@ -359,13 +362,19 @@ while cap.isOpened():
                 currentTime = datetime.now()
                 currentTimestamp = currentTime.timestamp()
                 deltaTime = currentTimestamp - lastTime
-                print("deltaTime = ",deltaTime)
+                #print("deltaTime = ",deltaTime)
                 spotTimer += deltaTime
             else:
                 spotTimer = 0
             
-            if spotTimer > safetyTime:
+            if spotTimer >= safetyTime:
                 print("DANGER!")
+                spotTimer = safetyTime
+                if playAudio:
+                    #playsound('./HELP.wav', False)
+                    playAudio = False
+
+            plot_safety_bar((spotTimer / safetyTime) * 100, img)
 
             currentTime = datetime.now()
             lastTime = currentTime.timestamp()
